@@ -1,0 +1,7 @@
+.cesiumContainer canvas {
+  height: 400px;
+}
+
+.cesium-viewer-bottom {
+  display: none;
+}
