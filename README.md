@@ -66,4 +66,4 @@ The MIT License (MIT)
 
 Copyright (c) 2016 Satellogic SA.
 
-See [LICENSE.md](LICENSE.md) for details
+See [LICENSE](LICENSE) for details
