@@ -49,7 +49,9 @@ export class GlobeCtrl extends PanelCtrl {
 
       // Replace querystring with dashboard's templates and from/to
       const url = this.templateSrv
-                    .replace(`${this.panel.url}?${this.panel.query}`)
+                    .replace(
+                      `${this.panel.url}?${this.panel.query}`, {}, 'pipe'
+                    )
                     .replace(/\$timeFrom/g, from.valueOf())
                     .replace(/\$timeTo/g, to.valueOf());
 
