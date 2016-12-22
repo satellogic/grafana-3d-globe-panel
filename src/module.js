@@ -1,4 +1,5 @@
 /* global _, window */
+import config from 'app/core/config';
 import { PanelCtrl } from 'app/plugins/sdk';
 import angular from 'angular';
 
@@ -7,7 +8,7 @@ import './css/3d-globe-panel.css!';
 
 require('./Cesium/Cesium.js');
 
-const BASE_URL = '/public/plugins/satellogic-3d-globe-panel';
+const BASE_URL = `${config.appSubUrl}/public/plugins/satellogic-3d-globe-panel`;
 const Cesium = window.Cesium;
 const panelSettings = {
   url: '',

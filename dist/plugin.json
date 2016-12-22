@@ -5,11 +5,11 @@
 
   "info": {
     "description": "A Cesium based 3D Globe panel plugin.",
-    "author": { "name": "Satellogic SA", "url": "http://satellogic.com" },
+    "author": { "name": "Satellogic SA", "url": "http://www.satellogic.com" },
     "links": [
       {"name": "GitHub", "url": "https://github.com/satellogic/grafana-3d-globe-panel"},
       {"name": "License", "url": "https://github.com/satellogic/grafana-3d-globe-panel/blob/master/LICENSE"},
-      {"name": "Satellogic", "url": "https://www.satellogic.com"}
+      {"name": "Satellogic", "url": "http://www.satellogic.com"}
     ],
     "screenshots": [
       { "name": "Globe View", "path": "img/screenshots/globe.png"},
