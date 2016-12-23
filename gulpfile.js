@@ -1,11 +1,13 @@
 const gulp = require('gulp');
 const del = require('del');
 const babel = require('gulp-babel');
+const strip = require('gulp-strip-comments');
 
 gulp.task('build', ['clean'], () => {
   // Babel
   gulp.src('src/module.js')
       .pipe(babel())
+      .pipe(strip())
       .pipe(gulp.dest('dist'));
   // Cesium, copy it from the npm install directory
   gulp.src('node_modules/cesium/Build/Cesium/Cesium.js')
