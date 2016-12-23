@@ -28,7 +28,53 @@ export class GlobeCtrl extends PanelCtrl {
 
     this.events.on('refresh', this.refresh);
     this.events.on('init-edit-mode', this.onInitEditMode);
+
+    // Override Cesium timeline labels to use UTC or Browser timezone
+    this.overrideTimelineLabels($scope.ctrl.dashboard);
+
     this.refresh();
+  }
+  overrideTimelineLabels = (dashboard) => {
+    // Override Cesium Timeline.makelabel to transform dates from UTC.
+    // This code is a strict port from https://github.com/AnalyticalGraphicsInc/cesium/blob/e786760dee9afb77493ddf624ccc31493c24084b/Source/Widgets/Timeline/Timeline.js#L317
+    // with a few tweaks to shift the displayed time label to the correct tz.
+    Cesium.Timeline.prototype.makeLabel = function makeLabel(_time) {
+      const timelineMonthNames = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ];
+      let millisecondString = ' UTC';
+      let time = _time;
+      const tzOffset = (new Date()).getTimezoneOffset();
+      const twoDigits = num => (
+        (num < 10) ? (`0${num.toString()}`) : num.toString()
+      );
+
+      if (!dashboard.isTimezoneUtc() && tzOffset !== 0) {
+        time = Cesium.JulianDate.addMinutes(
+          time,
+          -1 * tzOffset,
+          new Cesium.JulianDate()
+        );
+
+        millisecondString = ` UTC${tzOffset > 0 ? '-' : '+'}` +
+                            `${twoDigits(Math.floor(tzOffset / 60))}:` +
+                            `${twoDigits(tzOffset % 60)}`;
+      }
+      const gregorian = Cesium.JulianDate.toGregorianDate(time);
+      const millisecond = gregorian.millisecond;
+
+      // eslint-disable-next-line no-underscore-dangle
+      if ((millisecond > 0) && (this._timeBarSecondsSpan < 3600)) {
+        millisecondString = Math.floor(millisecond).toString();
+        while (millisecondString.length < 3) {
+          millisecondString = `0${millisecondString}`;
+        }
+        millisecondString = `.  ${millisecondString}`;
+      }
+      // eslint-disable-next-line max-len
+      return `${timelineMonthNames[gregorian.month - 1]} ${gregorian.day} ${gregorian.year} ${twoDigits(gregorian.hour)}:${twoDigits(gregorian.minute)}:${twoDigits(gregorian.second)}${millisecondString}`;
+    };
   }
   onInitEditMode = () => {
     this.addEditorTab(
