@@ -16,6 +16,12 @@ const panelSettings = {
 };
 window.CESIUM_BASE_URL = `${BASE_URL}/Cesium/`;
 
+// Rectangle spanning the whole world, needed to fit the entire map in viewer
+const rectangle = Cesium.Rectangle.fromDegrees(-180.0, -90.0, 180.0, 90.0);
+
+// Set the default zoom to fit the entire rectangle withinin the view
+Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.0;
+
 // Main Globe Control
 export class GlobeCtrl extends PanelCtrl {
   constructor($scope, $injector, $rootScope) {
@@ -28,6 +34,7 @@ export class GlobeCtrl extends PanelCtrl {
 
     this.events.on('refresh', this.refresh);
     this.events.on('init-edit-mode', this.onInitEditMode);
+    this.events.on('render', this.updateViewer);
 
     // Override Cesium timeline labels to use UTC or Browser timezone
     this.overrideTimelineLabels($scope.ctrl.dashboard);
@@ -85,6 +92,17 @@ export class GlobeCtrl extends PanelCtrl {
   }
   registerViewer = (viewer) => {
     this.viewer = viewer;
+  }
+  updateViewer = () => {
+    // Cesium needs a fixed height to correctly size its canvas
+    this.viewer.container.style.height = `${Math.ceil(this.height)}px`;
+
+    // Add a small delay to ensure the rectangle is correclty displayed
+    window.setTimeout(() => {
+      this.viewer.camera.setView({
+        destination: rectangle,
+      });
+    }, 100);
   }
   refresh = () => {
     if (this.panel.bingKey) {
@@ -147,9 +165,20 @@ angular.module('grafana.directives')
           negativeZ: `${STARS_FOLDER}/SkyBox/tycho2t3_80_mz.jpg`,
         },
       }),
+      sceneMode: Cesium.SceneMode.SCENE2D,
       animation: false,
+      geocoder: false,
+      shadows: true,
     });
+
+    // Make lighting permanent and not fade out with zoom distance
     viewer.scene.globe.enableLighting = true;
+    viewer.scene.globe.lightingFadeOutDistance = 65000000.0;
+
+    // Wait for the first imagery layer to be ready before zooming out
+    viewer.imageryLayers.get(0).imageryProvider.readyPromise.then(() => {
+      scope.ctrl.updateViewer();
+    });
 
     scope.ctrl.registerViewer(viewer);
   },
