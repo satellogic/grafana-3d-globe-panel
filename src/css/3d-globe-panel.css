@@ -1,5 +1,7 @@
-.cesiumContainer canvas {
-  height: 400px;
+.cesiumContainer {
+  width: 100%;
+  height: 360px;
+  overflow: hidden;
 }
 
 .cesium-viewer-bottom {
