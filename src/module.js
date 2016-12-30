@@ -107,6 +107,8 @@ export class GlobeCtrl extends PanelCtrl {
     // Update Cesium clock timespan
     this.viewer.clock.startTime = from;
     this.viewer.clock.stopTime = to;
+    this.viewer.clock.currentTime = from;
+
     // Zoom timeline to include the whole timespan
     this.viewer.timeline.zoomTo(from, to);
   }
