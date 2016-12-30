@@ -107,7 +107,6 @@ export class GlobeCtrl extends PanelCtrl {
     // Update Cesium clock timespan
     this.viewer.clock.startTime = from;
     this.viewer.clock.stopTime = to;
-    this.viewer.clock.currentTime = from;
 
     // Zoom timeline to include the whole timespan
     this.viewer.timeline.zoomTo(from, to);
@@ -143,8 +142,7 @@ export class GlobeCtrl extends PanelCtrl {
       this.viewer.dataSources.add(
         Cesium.CzmlDataSource.load(url)
       ).then(
-        // Don't use the CZML timespan, but Grafana's
-        this.updateViewerTimespan,
+        null,
         (err) => {
           this.rootScope.appEvent(
             'alert-error',
