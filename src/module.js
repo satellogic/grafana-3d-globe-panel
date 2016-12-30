@@ -34,7 +34,7 @@ export class GlobeCtrl extends PanelCtrl {
 
     this.events.on('refresh', this.refresh);
     this.events.on('init-edit-mode', this.onInitEditMode);
-    this.events.on('render', this.updateViewer);
+    this.events.on('render', this.updateViewerHeight);
 
     // Override Cesium timeline labels to use UTC or Browser timezone
     this.overrideTimelineLabels($scope.ctrl.dashboard);
@@ -92,8 +92,25 @@ export class GlobeCtrl extends PanelCtrl {
   }
   registerViewer = (viewer) => {
     this.viewer = viewer;
+    this.updateViewerTimespan();
   }
-  updateViewer = () => {
+  updateViewerTimespan = () => {
+    let { from, to } = this.timeSrv.timeRange();
+    from = Cesium.JulianDate.fromDate(
+      from.toDate(),
+      new Cesium.JulianDate()
+    );
+    to = Cesium.JulianDate.fromDate(
+      to.toDate(),
+      new Cesium.JulianDate()
+    );
+    // Update Cesium clock timespan
+    this.viewer.clock.startTime = from;
+    this.viewer.clock.stopTime = to;
+    // Zoom timeline to include the whole timespan
+    this.viewer.timeline.zoomTo(from, to);
+  }
+  updateViewerHeight = () => {
     // Cesium needs a fixed height to correctly size its canvas
     this.viewer.container.style.height = `${Math.ceil(this.height)}px`;
 
@@ -132,7 +149,8 @@ export class GlobeCtrl extends PanelCtrl {
       this.viewer.dataSources.add(
         Cesium.CzmlDataSource.load(url)
       ).then(
-        null,
+        // Don't use the CZML timespan, but Grafana's
+        this.updateViewerTimespan,
         (err) => {
           this.rootScope.appEvent(
             'alert-error',
@@ -140,6 +158,9 @@ export class GlobeCtrl extends PanelCtrl {
           );
         },
       );
+    } else if (this.viewer) {
+      // Hook Cesium timespan to Grafana's
+      this.updateViewerTimespan();
     }
   }
 }
@@ -177,7 +198,7 @@ angular.module('grafana.directives')
 
     // Wait for the first imagery layer to be ready before zooming out
     viewer.imageryLayers.get(0).imageryProvider.readyPromise.then(() => {
-      scope.ctrl.updateViewer();
+      scope.ctrl.updateViewerHeight();
     });
 
     scope.ctrl.registerViewer(viewer);
