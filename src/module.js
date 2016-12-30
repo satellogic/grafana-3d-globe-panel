@@ -131,22 +131,14 @@ export class GlobeCtrl extends PanelCtrl {
       // Get global from/to
       const { from, to } = this.timeSrv.timeRange();
 
-      // Construct scopedVars object, used by the template service
-      const scopedVars = _.defaults(this.panel.scopedVars, {
-        timeFrom: {
-          value: from.format('X'), // has to be a string, not an integer
-        },
-        timeTo: {
-          value: to.format('X'), // has to be a string, not an integer
-        },
-      });
-
       // Replace querystring with dashboard's templates and from/to
       const url = this.templateSrv.replace(
         `${this.panel.url}?${this.panel.query}`,
-        scopedVars,
+        this.panel.scopedVars,
         'pipe'
-      );
+      ).replace(/\$timeFrom/g, +from)
+       .replace(/\$timeTo/g, +to);
+
       this.viewer.dataSources.removeAll(true);
       this.viewer.dataSources.add(
         Cesium.CzmlDataSource.load(url)
