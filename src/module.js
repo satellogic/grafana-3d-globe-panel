@@ -27,6 +27,7 @@ export class GlobeCtrl extends PanelCtrl {
   constructor($scope, $injector, $rootScope) {
     super($scope, $injector);
     this.rootScope = $rootScope;
+    this.scope = $scope;
 
     this.panel = _.defaults(this.panel, panelSettings);
     this.timeSrv = $injector.get('timeSrv');
@@ -35,9 +36,10 @@ export class GlobeCtrl extends PanelCtrl {
     this.events.on('refresh', this.refresh);
     this.events.on('init-edit-mode', this.onInitEditMode);
     this.events.on('render', this.updateViewerHeight);
+    this.rootScope.onAppEvent('setCrosshair', this.updateCurrentTime, $scope);
 
     // Override Cesium timeline labels to use UTC or Browser timezone
-    this.overrideTimelineLabels($scope.ctrl.dashboard);
+    this.overrideTimelineLabels(this.scope.ctrl.dashboard);
 
     this.refresh();
   }
@@ -121,6 +123,14 @@ export class GlobeCtrl extends PanelCtrl {
         destination: rectangle,
       });
     }, 100);
+  }
+  updateCurrentTime = (event, info) => {
+    if (this.scope.ctrl.dashboard.sharedCrosshair) {
+      this.viewer.clock.currentTime = Cesium.JulianDate.fromDate(
+        new Date(info.pos.x),
+        new Cesium.JulianDate()
+      );
+    }
   }
   refresh = () => {
     if (this.panel.bingKey) {
