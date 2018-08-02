@@ -133,9 +133,44 @@ export class GlobeCtrl extends PanelCtrl {
     }
   }
   refresh = () => {
+    if (this.viewer && this.panel.map) {
+        var imagery = null;
+        var i;
+        var patt = new RegExp(this.panel.map);
+        for (i = 0; i < this.viewer.baseLayerPicker.viewModel.imageryProviderViewModels.length; i++) {
+            if (patt.test(this.viewer.baseLayerPicker.viewModel.imageryProviderViewModels[i].name)) {
+               console.log("map is found");
+               imagery = this.viewer.baseLayerPicker.viewModel.imageryProviderViewModels[i];
+               break;
+            }
+        }
+        if (imagery != null) {
+           this.viewer.baseLayerPicker.viewModel.selectedImagery = imagery; 
+        }
+    }
+    
+
+    if (this.viewer && this.panel.scenemode) {
+      if (this.panel.scenemode == "2D") {
+          this.viewer.sceneModePicker.viewModel.morphTo2D();
+      } else {
+         this.viewer.sceneModePicker.viewModel.morphTo3D();
+      }
+    } 
+    
+    if (this.viewer && this.panel.home) {
+        var location = this.panel.home.split(",")
+        var extent;
+        if (location.length == 4) {
+            extent = Cesium.Rectangle.fromDegrees(parseFloat(location[0]),parseFloat(location[1]),parseFloat(location[2]),parseFloat(location[3]));
+            Cesium.Camera.DEFAULT_VIEW_RECTANGLE = extent;
+        }
+    }
+
     if (this.panel.bingKey) {
       Cesium.BingMapsApi.defaultKey = this.panel.bingKey;
     }
+
     if (this.viewer && this.panel.url) {
       // Get global from/to
       const { from, to } = this.timeSrv.timeRange();
